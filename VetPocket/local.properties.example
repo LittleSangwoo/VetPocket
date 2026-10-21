@@ -1,0 +1,13 @@
+# Скопируйте нужные строки в файл local.properties (в корне проекта, рядом с sdk.dir).
+# Android Studio создаёт local.properties сама — просто допишите строки ниже.
+
+# Ключ Yandex MapKit (developer.tech.yandex.ru -> Подключить API -> MapKit Mobile SDK)
+YANDEX_MAPKIT_KEY=
+
+# Провайдер LLM: GROQ или YANDEX_GPT
+LLM_PROVIDER=YANDEX_GPT
+LLM_API_KEY=
+# Только для YANDEX_GPT: идентификатор каталога Yandex Cloud
+LLM_FOLDER_ID=
+# Необязательно. GROQ: llama-3.3-70b-versatile (по умолчанию). YANDEX_GPT: yandexgpt/latest (по умолчанию)
+LLM_MODEL=
