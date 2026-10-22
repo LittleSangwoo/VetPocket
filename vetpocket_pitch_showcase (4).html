@@ -1,0 +1,1576 @@
+<!DOCTYPE html>
+<html lang="ru" class="scroll-smooth">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>VetPocket — AI-забота нового поколения о вашем питомце | Дипломный проект</title>
+    
+    <!-- Google Fonts: Syne & Plus Jakarta Sans & JetBrains Mono for Code -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@400;500;600;700&family=Plus+Jakarta+Sans:wght@300;400;500;600;700;800&family=Syne:wght@700;800;900&display=swap" rel="stylesheet">
+    
+    <!-- Tailwind CSS CDN -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    <!-- Font Awesome 6 Free CDN -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
+    
+    <!-- GSAP & ScrollTrigger -->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/gsap/3.12.5/gsap.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/gsap/3.12.5/ScrollTrigger.min.js"></script>
+    
+    <!-- Three.js for generative particle wave background -->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"></script>
+
+    <script>
+        tailwind.config = {
+            theme: {
+                extend: {
+                    colors: {
+                        deep: '#070709',
+                        darkcard: 'rgba(18, 20, 26, 0.72)',
+                        neonEmerald: '#10B981',
+                        neonEmeraldGlow: '#059669',
+                        neonPurple: '#8B5CF6',
+                        neonCyan: '#06B6D4',
+                        neonRed: '#EF4444',
+                        codeBg: '#0D1117'
+                    },
+                    fontFamily: {
+                        sans: ['"Plus Jakarta Sans"', 'sans-serif'],
+                        display: ['Syne', 'sans-serif'],
+                        mono: ['"JetBrains Mono"', 'monospace'],
+                    }
+                }
+            }
+        }
+    </script>
+
+    <style>
+        * {
+            box-sizing: border-box;
+        }
+        body {
+            background-color: #070709;
+            color: #F3F4F6;
+            overflow-x: hidden;
+            font-family: "Plus Jakarta Sans", sans-serif;
+            selection-background-color: #10B981;
+            selection-color: #000;
+        }
+
+        /* Glassmorphism Classes */
+        .glass-panel {
+            background: linear-gradient(135deg, rgba(255, 255, 255, 0.05) 0%, rgba(255, 255, 255, 0.015) 100%);
+            backdrop-filter: blur(20px);
+            -webkit-backdrop-filter: blur(20px);
+            border: 1px solid rgba(255, 255, 255, 0.08);
+            box-shadow: 0 20px 50px rgba(0, 0, 0, 0.5);
+        }
+
+        .glass-panel:hover {
+            border-color: rgba(16, 185, 129, 0.3);
+            box-shadow: 0 25px 60px rgba(16, 185, 129, 0.12);
+        }
+
+        .glass-pill {
+            background: rgba(255, 255, 255, 0.03);
+            backdrop-filter: blur(12px);
+            -webkit-backdrop-filter: blur(12px);
+            border: 1px solid rgba(255, 255, 255, 0.1);
+        }
+
+        /* Neon Glow Effects */
+        .glow-emerald {
+            filter: drop-shadow(0 0 24px rgba(16, 185, 129, 0.45));
+        }
+
+        .glow-purple {
+            filter: drop-shadow(0 0 28px rgba(139, 92, 246, 0.4));
+        }
+
+        .glow-cyan {
+            filter: drop-shadow(0 0 24px rgba(6, 182, 212, 0.45));
+        }
+
+        .glow-red {
+            filter: drop-shadow(0 0 24px rgba(239, 68, 68, 0.45));
+        }
+
+        .text-gradient-emerald {
+            background: linear-gradient(135deg, #FFFFFF 20%, #A7F3D0 60%, #10B981 100%);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+        }
+
+        .text-gradient-purple {
+            background: linear-gradient(135deg, #FFFFFF 20%, #DDD6FE 60%, #8B5CF6 100%);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+        }
+
+        .text-gradient-cyan {
+            background: linear-gradient(135deg, #FFFFFF 20%, #BAE6FD 60%, #06B6D4 100%);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+        }
+
+        /* Phone Frame Mockup styling */
+        .phone-frame {
+            position: relative;
+            border-radius: 44px;
+            background: #0D0F14;
+            border: 4px solid #232734;
+            box-shadow: 0 25px 80px -15px rgba(0, 0, 0, 0.9), 0 0 0 1px rgba(255, 255, 255, 0.1);
+            overflow: hidden;
+            transition: transform 0.4s cubic-bezier(0.16, 1, 0.3, 1), box-shadow 0.4s ease;
+        }
+
+        .phone-frame:hover {
+            transform: translateY(-8px) scale(1.02);
+            box-shadow: 0 35px 90px -10px rgba(16, 185, 129, 0.25), 0 0 0 1px rgba(16, 185, 129, 0.4);
+        }
+
+        .dynamic-island {
+            width: 90px;
+            height: 22px;
+            background: #000;
+            border-radius: 20px;
+            position: absolute;
+            top: 14px;
+            left: 50%;
+            transform: translateX(-50%);
+            z-index: 20;
+            border: 1px solid rgba(255, 255, 255, 0.08);
+        }
+
+        /* Image Placeholder Box with live drag-drop or file insert */
+        .screenshot-box {
+            position: relative;
+            width: 100%;
+            height: 100%;
+            min-height: 480px;
+            background: radial-gradient(circle at 50% 30%, #181c26 0%, #0c0e14 100%);
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            overflow: hidden;
+        }
+
+        .screenshot-box img {
+            width: 100%;
+            height: 100%;
+            object-fit: cover;
+            object-position: top center;
+            display: none;
+            position: absolute;
+            inset: 0;
+            z-index: 10;
+        }
+
+        .screenshot-box.has-img img {
+            display: block;
+        }
+
+        .screenshot-box.has-img .placeholder-ui {
+            display: none;
+        }
+
+        /* Custom noise overlay */
+        .bg-noise {
+            background-image: radial-gradient(rgba(255, 255, 255, 0.03) 1px, transparent 0);
+            background-size: 28px 28px;
+        }
+
+        /* Syntax Highlight Styles */
+        pre code {
+            font-family: 'JetBrains Mono', monospace;
+            font-size: 0.8125rem;
+            line-height: 1.6;
+        }
+        .token-keyword { color: #F43F5E; font-weight: 600; }
+        .token-function { color: #60A5FA; }
+        .token-string { color: #34D399; }
+        .token-comment { color: #64748B; font-style: italic; }
+        .token-type { color: #FBBF24; }
+        .token-val { color: #A78BFA; }
+
+        /* Custom Toast Notification */
+        #toast {
+            visibility: hidden;
+            min-width: 250px;
+            transform: translateX(-50%) translateY(30px);
+            opacity: 0;
+            transition: all 0.3s ease-in-out;
+        }
+        #toast.show {
+            visibility: visible;
+            transform: translateX(-50%) translateY(0);
+            opacity: 1;
+        }
+    </style>
+</head>
+<body class="bg-deep text-slate-100 antialiased selection:bg-neonEmerald selection:text-black">
+
+    <!-- Toast message container -->
+    <div id="toast" class="fixed top-24 left-1/2 z-50 glass-pill px-6 py-3 rounded-full border border-emerald-500/40 text-emerald-300 text-xs font-bold shadow-2xl flex items-center gap-2">
+        <i class="fa-solid fa-circle-check text-neonEmerald text-sm"></i>
+        <span id="toast-text">Ссылка успешно скопирована!</span>
+    </div>
+
+    <header class="fixed top-0 left-0 w-full z-50 px-4 sm:px-6 py-4 sm:py-5">
+        <nav class="max-w-7xl mx-auto flex items-center justify-between glass-pill px-5 sm:px-6 py-2.5 sm:py-3 rounded-full border border-white/10 shadow-2xl">
+            <div class="flex items-center gap-3">
+                <a href="#hero" class="flex items-center gap-3 group">
+                    <div class="w-9 h-9 rounded-xl bg-gradient-to-tr from-neonEmerald to-neonPurple flex items-center justify-center shadow-lg shadow-neonEmerald/20 group-hover:scale-105 transition-transform">
+                        <i class="fa-solid fa-paw text-black font-extrabold text-lg"></i>
+                    </div>
+                    <div class="flex items-center gap-2">
+                        <span class="font-display font-extrabold text-xl tracking-tight text-white">VetPocket<span class="text-neonEmerald">.</span></span>
+                        
+                    </div>
+                </a>
+            </div>
+
+            <div class="hidden xl:flex items-center gap-6 text-xs lg:text-sm font-medium text-slate-300">
+                <a href="#problem" class="hover:text-neonEmerald transition">Проблема</a>
+                <a href="#goals" class="hover:text-neonEmerald transition">Цели и задачи</a>
+                <a href="#solution" class="hover:text-neonEmerald transition">Решение</a>
+                <a href="#motivation" class="hover:text-neonEmerald transition">Почему скачать</a>
+                <a href="#gallery" class="hover:text-neonEmerald transition">8 экранов</a>
+                <a href="#under-the-hood" class="hover:text-neonEmerald transition">Под капотом</a>
+                <a href="#tech" class="hover:text-neonEmerald transition">Стек</a>
+            </div>
+
+            <div class="flex items-center gap-2 sm:gap-3">
+                <!-- GitHub Header Link -->
+                <a href="https://github.com/LittleSangwoo/VetPocket" target="_blank" rel="noopener noreferrer" class="flex items-center gap-2 px-3.5 py-1.5 rounded-full text-xs font-semibold bg-white/5 border border-white/15 hover:border-white/40 hover:bg-white/10 transition text-slate-200" title="Открыть репозиторий на GitHub">
+                    <i class="fa-brands fa-github text-sm"></i>
+                    <span class="hidden md:inline">GitHub</span>
+                </a>
+                
+            </div>
+        </nav>
+    </header>
+
+    
+
+    <section id="hero" class="relative min-h-screen pt-32 pb-20 flex items-center justify-center overflow-hidden bg-noise">
+        <!-- 3D Canvas background -->
+        <canvas id="three-hero-canvas" class="absolute inset-0 pointer-events-none z-0 opacity-40"></canvas>
+        
+        <!-- Ambient Glowing Orbs -->
+        <div class="absolute -top-32 -left-32 w-96 h-96 bg-neonEmerald/15 rounded-full blur-[140px] pointer-events-none"></div>
+        <div class="absolute top-1/2 -right-32 w-96 h-96 bg-neonPurple/15 rounded-full blur-[160px] pointer-events-none"></div>
+
+        <div class="relative z-10 max-w-7xl mx-auto px-6 grid grid-cols-1 lg:grid-cols-12 gap-12 items-center">
+            
+            <!-- Left: Hero Text Content -->
+            <div class="lg:col-span-7 space-y-6 text-center lg:text-left">
+                <div class="inline-flex items-center gap-2 px-4 py-1.5 rounded-full glass-pill border-emerald-500/30 text-neonEmerald text-xs font-semibold tracking-wide">
+                    <span class="w-2 h-2 rounded-full bg-neonEmerald animate-ping"></span>
+                    Разработчик – Шевцова Варвара * группа 53-02
+                </div>
+
+                <h1 class="font-display text-4xl sm:text-6xl xl:text-7xl font-extrabold tracking-tight leading-[1.08]">
+                    VetPocket.<br>
+                    <span class="text-gradient-emerald">AI-забота</span> о тех, кто не умеет говорить.
+                </h1>
+
+                <p class="text-slate-400 text-base sm:text-lg max-w-xl mx-auto lg:mx-0 font-normal leading-relaxed">
+                    Превращаем непонятный состав кормов в прозрачный медицинский вердикт. Персональный ветеринарный ассистент, карта клиник с экстренным SOS и защищенный трекинг здоровья.
+                </p>
+
+                <!-- CTA Row -->
+                <div class="pt-4 flex flex-wrap items-center justify-center lg:justify-start gap-4">
+                    <a href="#gallery" class="px-8 py-4 rounded-2xl bg-gradient-to-r from-neonEmerald to-emerald-400 text-black font-extrabold text-sm tracking-wide shadow-xl shadow-neonEmerald/25 hover:shadow-neonEmerald/40 hover:scale-105 transition-all">
+                        <i class="fa-solid fa-mobile-screen-button mr-2"></i>
+                        Смотреть демо (8 экранов)
+                    </a>
+                    <a href="https://github.com/LittleSangwoo/VetPocket" target="_blank" rel="noopener noreferrer" class="px-8 py-4 rounded-2xl glass-panel text-white font-semibold text-sm hover:border-white/30 hover:bg-white/10 transition-all flex items-center gap-2">
+                        <i class="fa-brands fa-github text-base"></i>
+                        <span>Исходный код на GitHub</span>
+                    </a>
+                </div>
+
+                <!-- Stats Counters -->
+                <div class="pt-8 grid grid-cols-3 gap-4 border-t border-white/10 max-w-lg mx-auto lg:mx-0">
+                    <div>
+                        <div class="font-display text-2xl sm:text-3xl font-extrabold text-white">0.4 сек</div>
+                        <div class="text-xs text-slate-400 mt-1">Офлайн OCR сканер</div>
+                    </div>
+                    <div>
+                        <div class="font-display text-2xl sm:text-3xl font-extrabold text-neonEmerald">100%</div>
+                        <div class="text-xs text-slate-400 mt-1">Персонализация под породу</div>
+                    </div>
+                    <div>
+                        <div class="font-display text-2xl sm:text-3xl font-extrabold text-neonPurple">24/7</div>
+                        <div class="text-xs text-slate-400 mt-1">SOS-навигатор клиник</div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Right: Screen 1 - Main Mockup -->
+            <div class="lg:col-span-5 flex justify-center relative hero-mockup-wrapper">
+                <div class="absolute inset-0 bg-gradient-to-b from-neonEmerald/20 via-neonPurple/10 to-transparent blur-3xl -z-10 rounded-full scale-90"></div>
+
+                <!-- Phone Frame Container -->
+                <div class="phone-frame w-[310px] sm:w-[330px] aspect-[9/19.5]">
+                    <div class="dynamic-island"></div>
+                    
+                    <!-- 1. СКРИНШОТ: ГЛАВНАЯ СТРАНИЦА -->
+                    <div class="screenshot-placeholder-1 screenshot-box cursor-pointer" id="screen-box-1" data-title="1. Главная страница приложения" onclick="pickFile('home')">
+                        <img id="img-slot-1" alt="Главная страница VetPocket" src="">
+                        <div class="placeholder-ui text-center p-6 space-y-4">
+                            <div class="w-16 h-16 rounded-2xl bg-white/5 border border-white/10 flex items-center justify-center mx-auto text-neonEmerald text-2xl glow-emerald">
+                                <i class="fa-solid fa-house-chimney-medical"></i>
+                            </div>
+                            <div>
+                                <span class="px-2.5 py-1 rounded bg-neonEmerald/20 text-neonEmerald font-mono text-[11px] font-bold tracking-wider">Скриншот 1</span>
+                                <h4 class="text-lg font-bold text-white mt-2">Главная страница</h4>
+                                <p class="text-xs text-slate-400 max-w-[200px] mx-auto mt-1">
+                                    Профиль питомца, быстрые метрики, статус питания и ключевые действия.
+                                </p>
+                            </div>
+                            <button class="px-4 py-2 rounded-xl bg-white/10 hover:bg-white/20 border border-white/10 text-xs text-white font-medium transition pointer-events-none">
+                                <i class="fa-solid fa-arrow-up-from-bracket mr-1.5 text-neonEmerald"></i> Вставить изображение
+                            </button>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Floating badge -->
+                <div class="hidden sm:flex absolute -bottom-4 -left-6 glass-panel px-5 py-3 rounded-2xl items-center gap-3 border-emerald-500/20 shadow-2xl">
+                    <div class="w-10 h-10 rounded-xl bg-emerald-500/20 flex items-center justify-center text-neonEmerald">
+                        <i class="fa-solid fa-dna text-lg"></i>
+                    </div>
+                    <div>
+                        <div class="text-[11px] text-slate-400">Умный профиль</div>
+                        <div class="text-xs font-bold text-white">Учет аллергий и ХБP</div>
+                    </div>
+                </div>
+            </div>
+
+        </div>
+    </section>
+
+    <section id="problem" class="py-28 relative border-t border-white/5 overflow-hidden">
+        <div class="max-w-6xl mx-auto px-6 text-center space-y-8">
+            <span class="text-xs uppercase tracking-[0.3em] font-extrabold text-neonPurple">Боль каждого владельца</span>
+            
+            <h2 class="font-display text-3xl sm:text-5xl lg:text-6xl font-bold max-w-4xl mx-auto leading-tight">
+                «Мы покупаем корм каждый день, <span class="text-slate-500 line-through">вслепую доверяя</span> красивой упаковке».
+            </h2>
+            
+            <p class="text-slate-400 text-base sm:text-xl max-w-2xl mx-auto font-light leading-relaxed">
+                Маркетологи пишут <span class="text-white font-medium">«Holistic»</span> и <span class="text-white font-medium">«Premium»</span>, маскируя аллергены, завышенную золу, скрытый сахар и опасный фосфор. Мелкий шрифт состава на пачке практически невозможно прочитать в магазине.
+            </p>
+
+            <!-- Contrast Visual -->
+            <div class="grid grid-cols-1 md:grid-cols-2 gap-6 pt-10 text-left">
+                <div class="glass-panel p-8 rounded-3xl border-red-500/20 relative overflow-hidden group">
+                    <div class="absolute top-0 right-0 w-32 h-32 bg-red-500/5 rounded-full blur-2xl"></div>
+                    <div class="flex items-center gap-3 text-red-400 mb-4 font-semibold text-sm">
+                        <i class="fa-solid fa-triangle-exclamation"></i> Реальность полок супермаркета
+                    </div>
+                    <h3 class="text-xl font-bold text-white mb-2">Непроницаемый состав</h3>
+                    <p class="text-slate-400 text-sm leading-relaxed">
+                        Скрытые консерванты, дегидрированное мясо неизвестного происхождения, расплывчатые формулировки и латынь, ведущие к хронической болезни почек и дерматитам.
+                    </p>
+                </div>
+
+                <div class="glass-panel p-8 rounded-3xl border-neonEmerald/30 relative overflow-hidden group">
+                    <div class="absolute top-0 right-0 w-32 h-32 bg-neonEmerald/10 rounded-full blur-2xl"></div>
+                    <div class="flex items-center gap-3 text-neonEmerald mb-4 font-semibold text-sm">
+                        <i class="fa-solid fa-shield-cat"></i> С приложением VetPocket
+                    </div>
+                    <h3 class="text-xl font-bold text-white mb-2">Мгновенная ясность за 1 фото</h3>
+                    <p class="text-slate-400 text-sm leading-relaxed">
+                        Сканируете камерой упаковку — нейросеть сопоставляет микроэлементы с возрастом, весом и хроническими особенностями вашего конкретного животного.
+                    </p>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <section id="goals" class="py-28 relative border-t border-white/5 bg-gradient-to-b from-deep via-[#0d1017] to-deep">
+        <div class="max-w-7xl mx-auto px-6">
+            <div class="text-center max-w-3xl mx-auto mb-16 space-y-4">
+                <span class="text-xs uppercase tracking-[0.25em] font-extrabold text-neonCyan">Стратегия продукта</span>
+                <h2 class="font-display text-3xl sm:text-5xl font-extrabold text-white">Цели и задачи VetPocket</h2>
+                <p class="text-slate-400 text-base">Каждая строчка кода решает насущную задачу — сохранить жизнь и здоровье домашнего любимца.</p>
+            </div>
+
+            <div class="grid grid-cols-1 md:grid-cols-3 gap-8">
+                <!-- Goal 1 -->
+                <div class="glass-panel p-8 rounded-3xl border-emerald-500/20 relative group hover:-translate-y-2 transition-all">
+                    <div class="w-14 h-14 rounded-2xl bg-neonEmerald/10 border border-neonEmerald/30 flex items-center justify-center text-neonEmerald text-2xl mb-6 glow-emerald">
+                        <i class="fa-solid fa-wheat-awn-circle-exclamation"></i>
+                    </div>
+                    <span class="text-xs uppercase font-mono tracking-wider text-emerald-400 font-bold">Задача №1</span>
+                    <h3 class="text-xl font-bold text-white mt-1 mb-3">Осознанный выбор рациона</h3>
+                    <p class="text-slate-400 text-sm leading-relaxed mb-4">
+                        Исключить слепое доверие к маркетинговой упаковке. Приложение расшифровывает сложные добавки (E-коды, белковые гидролизаты), предупреждая о токсичных ингредиентах и скрытых сахарах.
+                    </p>
+                    <ul class="text-xs text-slate-300 space-y-2 border-t border-white/10 pt-4">
+                        <li class="flex items-center gap-2"><i class="fa-solid fa-check text-neonEmerald"></i> Расчет баланса Ca / P (фосфор/кальций)</li>
+                        <li class="flex items-center gap-2"><i class="fa-solid fa-check text-neonEmerald"></i> Детекция злаков в беззерновых кормах</li>
+                    </ul>
+                </div>
+
+                <!-- Goal 2 -->
+                <div class="glass-panel p-8 rounded-3xl border-purple-500/20 relative group hover:-translate-y-2 transition-all">
+                    <div class="w-14 h-14 rounded-2xl bg-neonPurple/10 border border-neonPurple/30 flex items-center justify-center text-neonPurple text-2xl mb-6 glow-purple">
+                        <i class="fa-solid fa-piggy-bank"></i>
+                    </div>
+                    <span class="text-xs uppercase font-mono tracking-wider text-purple-400 font-bold">Задача №2</span>
+                    <h3 class="text-xl font-bold text-white mt-1 mb-3">Экономия бюджета на ветеринарах</h3>
+                    <p class="text-slate-400 text-sm leading-relaxed mb-4">
+                        Лечение острой МКБ, почечной недостаточности и дерматита обходится владельцам от 30 000 до 150 000 рублей. Превентивный анализ корма предотвращает болезнь до появления симптомов.
+                    </p>
+                    <ul class="text-xs text-slate-300 space-y-2 border-t border-white/10 pt-4">
+                        <li class="flex items-center gap-2"><i class="fa-solid fa-check text-neonPurple"></i> Сокращение экстренных госпитализаций</li>
+                        <li class="flex items-center gap-2"><i class="fa-solid fa-check text-neonPurple"></i> График контроля набора и сброса веса</li>
+                    </ul>
+                </div>
+
+                <!-- Goal 3 -->
+                <div class="glass-panel p-8 rounded-3xl border-cyan-500/20 relative group hover:-translate-y-2 transition-all">
+                    <div class="w-14 h-14 rounded-2xl bg-cyan-500/10 border border-cyan-500/30 flex items-center justify-center text-neonCyan text-2xl mb-6 glow-cyan">
+                        <i class="fa-solid fa-shield-heart"></i>
+                    </div>
+                    <span class="text-xs uppercase font-mono tracking-wider text-cyan-400 font-bold">Задача №3</span>
+                    <h3 class="text-xl font-bold text-white mt-1 mb-3">Безопасность и цифровая медкарта</h3>
+                    <p class="text-slate-400 text-sm leading-relaxed mb-4">
+                        Хранить весь анамнез (прививки, обработки от паразитов, аллергии) в одном месте. В экстренной ситуации в один клик показать дежурному врачу точный журнал здоровья.
+                    </p>
+                    <ul class="text-xs text-slate-300 space-y-2 border-t border-white/10 pt-4">
+                        <li class="flex items-center gap-2"><i class="fa-solid fa-check text-neonCyan"></i> Push-уведомления о повторных вакцинах</li>
+                        <li class="flex items-center gap-2"><i class="fa-solid fa-check text-neonCyan"></i> Экстренный вызов клиник рядом 24/7</li>
+                    </ul>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <section id="solution" class="py-24 relative bg-noise border-t border-white/5">
+        <div class="max-w-7xl mx-auto px-6">
+            <div class="text-center max-w-3xl mx-auto mb-16 space-y-4">
+                <span class="text-xs uppercase tracking-[0.25em] font-extrabold text-neonEmerald">Принцип работы</span>
+                <h2 class="font-display text-3xl sm:text-5xl font-extrabold text-white">Умная триада безопасности</h2>
+                <p class="text-slate-400 text-base">Инженерия, ориентированная на бескомпромиссную конфиденциальность и медицинскую пользу.</p>
+            </div>
+
+            <!-- Bento Grid 3 Cards - Fully Fixed & Styled Icons -->
+            <div class="grid grid-cols-1 md:grid-cols-3 gap-8">
+                
+                <!-- Card 1: Camera on device (FA Free & Clean SVG fallback) -->
+                <div class="bento-card glass-panel p-8 sm:p-10 rounded-3xl flex flex-col justify-between relative group hover:-translate-y-2 transition-all duration-300 border-emerald-500/30">
+                    <div class="space-y-6">
+                        <div class="w-16 h-16 rounded-2xl bg-neonEmerald/10 border border-neonEmerald/30 flex items-center justify-center text-neonEmerald text-2xl group-hover:scale-110 transition-transform glow-emerald">
+                            <!-- Bulletproof Dual Rendering Icon -->
+                            <svg class="w-8 h-8 text-neonEmerald" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                                <path d="M23 19a2 2 0 0 1-2 2H3a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h4l2-3h6l2 3h4a2 2 0 0 1 2 2z"></path>
+                                <circle cx="12" cy="13" r="4"></circle>
+                            </svg>
+                        </div>
+                        <div>
+                            <span class="text-xs uppercase tracking-wider text-slate-500 font-bold">Модуль 01</span>
+                            <h3 class="text-2xl font-bold text-white mt-1">Сканирование на устройстве</h3>
+                        </div>
+                        <p class="text-slate-400 text-sm leading-relaxed">
+                            Умная рамка детекции мгновенно вычленяет блок «Состав / Ingredients» даже на изогнутых блестящих паучах и пакетах сухих кормов при слабом магазинном свете.
+                        </p>
+                    </div>
+                    <div class="pt-8 border-t border-white/5 flex items-center justify-between text-xs text-slate-400">
+                        <span>Кадрирование на лету CameraX</span>
+                        <i class="fa-solid fa-arrow-right text-neonEmerald"></i>
+                    </div>
+                </div>
+
+                <!-- Card 2: Privacy Shield (Purple Glow) -->
+                <div class="bento-card glass-panel p-8 sm:p-10 rounded-3xl flex flex-col justify-between relative group hover:-translate-y-2 transition-all duration-300 border-purple-500/30">
+                    <div class="space-y-6">
+                        <div class="w-16 h-16 rounded-2xl bg-neonPurple/10 border border-neonPurple/30 flex items-center justify-center text-neonPurple text-2xl group-hover:scale-110 transition-transform glow-purple">
+                            <i class="fa-solid fa-shield-halved text-2xl text-neonPurple"></i>
+                        </div>
+                        <div>
+                            <span class="text-xs uppercase tracking-wider text-slate-500 font-bold">Модуль 02</span>
+                            <h3 class="text-2xl font-bold text-white mt-1">Офлайн OCR Конфиденциальность</h3>
+                        </div>
+                        <p class="text-slate-400 text-sm leading-relaxed">
+                            Локальный OCR распознает текст прямо на процессоре вашего смартфона. Ваши фото и личные данные не сливаются в облако для парсинга картинок.
+                        </p>
+                    </div>
+                    <div class="pt-8 border-t border-white/5 flex items-center justify-between text-xs text-slate-400">
+                        <span>Zero-cloud image leakage</span>
+                        <i class="fa-solid fa-arrow-right text-neonPurple"></i>
+                    </div>
+                </div>
+
+                <!-- Card 3: Personal AI Agent (Cyan / Brain Icon) -->
+                <div class="bento-card glass-panel p-8 sm:p-10 rounded-3xl flex flex-col justify-between relative group hover:-translate-y-2 transition-all duration-300 border-cyan-500/30">
+                    <div class="space-y-6">
+                        <div class="w-16 h-16 rounded-2xl bg-cyan-500/10 border border-cyan-500/30 flex items-center justify-center text-neonCyan text-2xl group-hover:scale-110 transition-transform glow-cyan">
+                            <i class="fa-solid fa-brain text-2xl text-neonCyan"></i>
+                        </div>
+                        <div>
+                            <span class="text-xs uppercase tracking-wider text-slate-500 font-bold">Модуль 03</span>
+                            <h3 class="text-2xl font-bold text-white mt-1">Персональный AI-анализ</h3>
+                        </div>
+                        <p class="text-slate-400 text-sm leading-relaxed">
+                            Медицинская модель ранжирует нутриенты, предупреждая об опасных соотношениях кальция/фосфора, аллергенах и формирует цветной вердикт: Отлично, Осторожно, Запрещено.
+                        </p>
+                    </div>
+                    <div class="pt-8 border-t border-white/5 flex items-center justify-between text-xs text-slate-400">
+                        <span>Клинические стандарты FEDIAF</span>
+                        <i class="fa-solid fa-arrow-right text-neonCyan"></i>
+                    </div>
+                </div>
+
+            </div>
+        </div>
+    </section>
+
+    <section id="motivation" class="py-24 relative border-t border-white/5 bg-gradient-to-b from-[#070709] via-[#0f141f] to-[#070709]">
+        <div class="max-w-7xl mx-auto px-6">
+            <div class="text-center max-w-3xl mx-auto mb-16 space-y-4">
+                <span class="text-xs uppercase tracking-[0.25em] font-extrabold text-neonEmerald">Ценность для хозяина</span>
+                <h2 class="font-display text-3xl sm:text-5xl font-black text-white">Почему стоит скачать VetPocket?</h2>
+                <p class="text-slate-400 text-base">Никаких платных подписок за базовые вещи. Только реальная польза в одном легком приложении.</p>
+            </div>
+
+            <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6">
+                <!-- Advantage 1 -->
+                <div class="glass-panel p-6 rounded-2xl space-y-3 border-emerald-500/20">
+                    <div class="text-3xl font-extrabold text-neonEmerald font-display">0 ₽</div>
+                    <h4 class="text-base font-bold text-white">Полностью бесплатно</h4>
+                    <p class="text-xs text-slate-400 leading-relaxed">
+                        Без скрытых подписок, ограничений на число сканов и всплывающей рекламы. Полностью открытый код дипломного проекта.
+                    </p>
+                </div>
+                <!-- Advantage 2 -->
+                <div class="glass-panel p-6 rounded-2xl space-y-3 border-purple-500/20">
+                    <div class="text-3xl font-extrabold text-neonPurple font-display">100%</div>
+                    <h4 class="text-base font-bold text-white">Работает без интернета</h4>
+                    <p class="text-xs text-slate-400 leading-relaxed">
+                        В зоомагазине в цокольном этаже часто нет связи. Наш Tesseract OCR распознает текст прямо на процессоре смартфона.
+                    </p>
+                </div>
+                <!-- Advantage 3 -->
+                <div class="glass-panel p-6 rounded-2xl space-y-3 border-cyan-500/20">
+                    <div class="text-3xl font-extrabold text-neonCyan font-display">1 тап</div>
+                    <h4 class="text-base font-bold text-white">Экстренная помощь SOS</h4>
+                    <p class="text-xs text-slate-400 leading-relaxed">
+                        Если питомец проглотил инородный предмет ночью — кнопка SOS за секунду проложит маршрут до открытой клиники с реанимацией.
+                    </p>
+                </div>
+                <!-- Advantage 4 -->
+                <div class="glass-panel p-6 rounded-2xl space-y-3 border-amber-500/20">
+                    <div class="text-3xl font-extrabold text-amber-400 font-display">AI</div>
+                    <h4 class="text-base font-bold text-white">Персональный подход</h4>
+                    <p class="text-xs text-slate-400 leading-relaxed">
+                        Корм анализируется не вообще, а именно для вашего любимца — с учетом породы (например, склонность мейн-кунов к ГКМП или спаниелей к аллергиям).
+                    </p>
+                </div>
+            </div>
+
+            <!-- Banner Call to action inside motivation -->
+            <div class="mt-12 glass-pill p-6 sm:p-8 rounded-3xl border border-white/10 flex flex-col md:flex-row items-center justify-between gap-6">
+                <div class="space-y-1 text-center md:text-left">
+                    <h3 class="text-lg font-bold text-white">Готовы протестировать прямо сейчас?</h3>
+                    <p class="text-xs text-slate-400">Склонируйте репозиторий с GitHub и запустите сборку в Android Studio за 2 минуты.</p>
+                </div>
+                <div class="flex items-center gap-3">
+                    <a href="https://github.com/LittleSangwoo/VetPocket" target="_blank" rel="noopener noreferrer" class="px-6 py-3 rounded-xl bg-neonEmerald hover:bg-emerald-300 text-black font-extrabold text-xs transition shadow-lg shadow-neonEmerald/25 flex items-center gap-2">
+                        <i class="fa-brands fa-github text-sm"></i>
+                        <span>Клонировать репозиторий</span>
+                    </a>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <section id="gallery" class="py-24 relative border-t border-white/5 bg-gradient-to-b from-[#070709] via-[#0b0e14] to-[#070709]">
+        <div class="max-w-7xl mx-auto px-6 mb-14">
+            <div class="flex flex-col md:flex-row md:items-end justify-between gap-6">
+                <div>
+                    <div class="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-neonPurple/20 text-neonPurple text-xs font-bold mb-3">
+                        <i class="fa-solid fa-layer-group"></i> Полная архитектура мобильного продукта
+                    </div>
+                    <h2 class="font-display text-3xl sm:text-5xl font-extrabold text-white">
+                        8 ключевых экранов VetPocket
+                    </h2>
+                    <p class="text-slate-400 text-sm sm:text-base mt-2 max-w-xl">
+                        Каждый экран решает конкретную проблему: от распознавания состава пачки до экстренного поиска ночной ветклиники с хирургом.
+                    </p>
+                </div>
+                <!-- Gallery Filter Buttons -->
+                <div class="flex flex-wrap items-center gap-2">
+                    <button onclick="filterGallery('all', this)" class="gallery-btn active px-4 py-2 rounded-xl text-xs font-semibold glass-pill border-neonEmerald text-neonEmerald transition">Все 8</button>
+                    <button onclick="filterGallery('ai', this)" class="gallery-btn px-4 py-2 rounded-xl text-xs font-semibold glass-pill text-slate-400 hover:text-white transition">AI & Сканер</button>
+                    <button onclick="filterGallery('med', this)" class="gallery-btn px-4 py-2 rounded-xl text-xs font-semibold glass-pill text-slate-400 hover:text-white transition">Медкарта & Вес</button>
+                    <button onclick="filterGallery('geo', this)" class="gallery-btn px-4 py-2 rounded-xl text-xs font-semibold glass-pill text-slate-400 hover:text-white transition">Карта & SOS</button>
+                </div>
+            </div>
+        </div>
+
+        <!-- 8 Phone Screens Grid -->
+        <div class="max-w-7xl mx-auto px-6 grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-8" id="screens-container">
+
+            <!-- SCREEN 1: Главная страница -->
+            <div class="screen-card flex flex-col items-center" data-category="med">
+                <div class="phone-frame w-full aspect-[9/19]">
+                    <div class="dynamic-island"></div>
+                    <div class="screenshot-placeholder-home screenshot-box cursor-pointer" id="screen-box-home" data-title="1. Главная страница" onclick="pickFile('home')">
+                        <img id="img-slot-home" alt="Главная страница" src="">
+                        <div class="placeholder-ui text-center p-5 space-y-3">
+                            <div class="w-12 h-12 rounded-xl bg-neonEmerald/10 text-neonEmerald flex items-center justify-center mx-auto text-xl glow-emerald">
+                                <i class="fa-solid fa-house-chimney-medical"></i>
+                            </div>
+                            <span class="px-2 py-0.5 rounded bg-white/10 text-[10px] font-mono text-neonEmerald">Скриншот 1</span>
+                            <h4 class="text-base font-bold text-white">Главная страница</h4>
+                            <p class="text-[11px] text-slate-400 leading-snug">Дашборд питомца, быстрый статус питания и напоминания</p>
+                            <button class="mt-2 px-3 py-1.5 rounded-lg bg-white/10 hover:bg-white/20 text-[11px] text-white pointer-events-none">Вставить фото</button>
+                        </div>
+                    </div>
+                </div>
+                <div class="mt-4 text-center">
+                    <h5 class="text-sm font-bold text-white">01. Главная страница</h5>
+                    <span class="text-xs text-slate-500">Центр управления здоровьем</span>
+                </div>
+            </div>
+
+            <!-- SCREEN 2: Камера при наведении -->
+            <div class="screen-card flex flex-col items-center" data-category="ai">
+                <div class="phone-frame w-full aspect-[9/19]">
+                    <div class="dynamic-island"></div>
+                    <div class="screenshot-placeholder-camera screenshot-box cursor-pointer" id="screen-box-camera" data-title="2. Камера при наведении" onclick="pickFile('camera')">
+                        <img id="img-slot-camera" alt="Камера при наведении" src="">
+                        <div class="placeholder-ui text-center p-5 space-y-3">
+                            <div class="w-12 h-12 rounded-xl bg-neonPurple/10 text-neonPurple flex items-center justify-center mx-auto text-xl glow-purple">
+                                <i class="fa-solid fa-camera"></i>
+                            </div>
+                            <span class="px-2 py-0.5 rounded bg-white/10 text-[10px] font-mono text-neonPurple">Скриншот 2</span>
+                            <h4 class="text-base font-bold text-white">Камера при наведении</h4>
+                            <p class="text-[11px] text-slate-400 leading-snug">Живая сетка захвата текста состава корма</p>
+                            <button class="mt-2 px-3 py-1.5 rounded-lg bg-white/10 hover:bg-white/20 text-[11px] text-white pointer-events-none">Вставить фото</button>
+                        </div>
+                    </div>
+                </div>
+                <div class="mt-4 text-center">
+                    <h5 class="text-sm font-bold text-white">02. Камера при наведении</h5>
+                    <span class="text-xs text-slate-500">Мгновенный OCR-захват</span>
+                </div>
+            </div>
+
+            <!-- SCREEN 3: Анализ ИИ -->
+            <div class="screen-card flex flex-col items-center" data-category="ai">
+                <div class="phone-frame w-full aspect-[9/19]">
+                    <div class="dynamic-island"></div>
+                    <div class="screenshot-placeholder-result screenshot-box cursor-pointer" id="screen-box-ai" data-title="3. Анализ ИИ" onclick="pickFile('ai')">
+                        <img id="img-slot-ai" alt="Анализ ИИ" src="">
+                        <div class="placeholder-ui text-center p-5 space-y-3">
+                            <div class="w-12 h-12 rounded-xl bg-neonEmerald/10 text-neonEmerald flex items-center justify-center mx-auto text-xl glow-emerald">
+                                <i class="fa-solid fa-chart-pie"></i>
+                            </div>
+                            <span class="px-2 py-0.5 rounded bg-white/10 text-[10px] font-mono text-neonEmerald">Скриншот 3</span>
+                            <h4 class="text-base font-bold text-white">Анализ ИИ</h4>
+                            <p class="text-[11px] text-slate-400 leading-snug">Цветовой вердикт, список плюсов и критических минусов</p>
+                            <button class="mt-2 px-3 py-1.5 rounded-lg bg-white/10 hover:bg-white/20 text-[11px] text-white pointer-events-none">Вставить фото</button>
+                        </div>
+                    </div>
+                </div>
+                <div class="mt-4 text-center">
+                    <h5 class="text-sm font-bold text-white">03. Анализ ИИ и вердикт</h5>
+                    <span class="text-xs text-slate-500">Разбор нутриентов и рисков</span>
+                </div>
+            </div>
+
+            <!-- SCREEN 4: Медкарта прививки -->
+            <div class="screen-card flex flex-col items-center" data-category="med">
+                <div class="phone-frame w-full aspect-[9/19]">
+                    <div class="dynamic-island"></div>
+                    <div class="screenshot-placeholder-medcard screenshot-box cursor-pointer" id="screen-box-vaccine" data-title="4. Медкарта прививки" onclick="pickFile('vaccine')">
+                        <img id="img-slot-vaccine" alt="Медкарта прививки" src="">
+                        <div class="placeholder-ui text-center p-5 space-y-3">
+                            <div class="w-12 h-12 rounded-xl bg-neonCyan/10 text-neonCyan flex items-center justify-center mx-auto text-xl glow-cyan">
+                                <i class="fa-solid fa-syringe"></i>
+                            </div>
+                            <span class="px-2 py-0.5 rounded bg-white/10 text-[10px] font-mono text-neonCyan">Скриншот 4</span>
+                            <h4 class="text-base font-bold text-white">Медкарта прививки</h4>
+                            <p class="text-[11px] text-slate-400 leading-snug">Календарь вакцинаций, препараты от клещей и глистов</p>
+                            <button class="mt-2 px-3 py-1.5 rounded-lg bg-white/10 hover:bg-white/20 text-[11px] text-white pointer-events-none">Вставить фото</button>
+                        </div>
+                    </div>
+                </div>
+                <div class="mt-4 text-center">
+                    <h5 class="text-sm font-bold text-white">04. Медкарта & Прививки</h5>
+                    <span class="text-xs text-slate-500">Защита от бешенства и инфекций</span>
+                </div>
+            </div>
+
+            <!-- SCREEN 5: Динамика веса -->
+            <div class="screen-card flex flex-col items-center" data-category="med">
+                <div class="phone-frame w-full aspect-[9/19]">
+                    <div class="dynamic-island"></div>
+                    <div class="screenshot-placeholder-weight screenshot-box cursor-pointer" id="screen-box-weight" data-title="5. Динамика веса" onclick="pickFile('weight')">
+                        <img id="img-slot-weight" alt="Динамика веса" src="">
+                        <div class="placeholder-ui text-center p-5 space-y-3">
+                            <div class="w-12 h-12 rounded-xl bg-emerald-500/10 text-emerald-400 flex items-center justify-center mx-auto text-xl glow-emerald">
+                                <i class="fa-solid fa-chart-line"></i>
+                            </div>
+                            <span class="px-2 py-0.5 rounded bg-white/10 text-[10px] font-mono text-emerald-400">Скриншот 5</span>
+                            <h4 class="text-base font-bold text-white">Динамика веса</h4>
+                            <p class="text-[11px] text-slate-400 leading-snug">График набора/снижения массы и идеальный вес породы</p>
+                            <button class="mt-2 px-3 py-1.5 rounded-lg bg-white/10 hover:bg-white/20 text-[11px] text-white pointer-events-none">Вставить фото</button>
+                        </div>
+                    </div>
+                </div>
+                <div class="mt-4 text-center">
+                    <h5 class="text-sm font-bold text-white">05. Динамика веса</h5>
+                    <span class="text-xs text-slate-500">Контроль ожирения и дефицита</span>
+                </div>
+            </div>
+
+            <!-- SCREEN 6: Хроника наблюдения -->
+            <div class="screen-card flex flex-col items-center" data-category="med">
+                <div class="phone-frame w-full aspect-[9/19]">
+                    <div class="dynamic-island"></div>
+                    <div class="screenshot-placeholder-chronicle screenshot-box cursor-pointer" id="screen-box-chronicle" data-title="6. Хроника наблюдения" onclick="pickFile('chronicle')">
+                        <img id="img-slot-chronicle" alt="Хроника наблюдения" src="">
+                        <div class="placeholder-ui text-center p-5 space-y-3">
+                            <div class="w-12 h-12 rounded-xl bg-indigo-500/10 text-indigo-400 flex items-center justify-center mx-auto text-xl">
+                                <i class="fa-solid fa-notes-medical"></i>
+                            </div>
+                            <span class="px-2 py-0.5 rounded bg-white/10 text-[10px] font-mono text-indigo-400">Скриншот 6</span>
+                            <h4 class="text-base font-bold text-white">Хроника наблюдения</h4>
+                            <p class="text-[11px] text-slate-400 leading-snug">Журнал симптомов, реакций на новый корм и поведение</p>
+                            <button class="mt-2 px-3 py-1.5 rounded-lg bg-white/10 hover:bg-white/20 text-[11px] text-white pointer-events-none">Вставить фото</button>
+                        </div>
+                    </div>
+                </div>
+                <div class="mt-4 text-center">
+                    <h5 class="text-sm font-bold text-white">06. Хроника наблюдения</h5>
+                    <span class="text-xs text-slate-500">Анамнез для приема врача</span>
+                </div>
+            </div>
+
+            <!-- SCREEN 7: Карта с клиниками -->
+            <div class="screen-card flex flex-col items-center" data-category="geo">
+                <div class="phone-frame w-full aspect-[9/19]">
+                    <div class="dynamic-island"></div>
+                    <div class="screenshot-placeholder-map screenshot-box cursor-pointer" id="screen-box-map" data-title="7. Карта с клиниками" onclick="pickFile('map')">
+                        <img id="img-slot-map" alt="Карта с клиниками" src="">
+                        <div class="placeholder-ui text-center p-5 space-y-3">
+                            <div class="w-12 h-12 rounded-xl bg-amber-500/10 text-amber-400 flex items-center justify-center mx-auto text-xl">
+                                <i class="fa-solid fa-map-location-dot"></i>
+                            </div>
+                            <span class="px-2 py-0.5 rounded bg-white/10 text-[10px] font-mono text-amber-400">Скриншот 7</span>
+                            <h4 class="text-base font-bold text-white">Карта клиник</h4>
+                            <p class="text-[11px] text-slate-400 leading-snug">Яндекс Карты, рейтинг, фильтр круглосуточных стационаров</p>
+                            <button class="mt-2 px-3 py-1.5 rounded-lg bg-white/10 hover:bg-white/20 text-[11px] text-white pointer-events-none">Вставить фото</button>
+                        </div>
+                    </div>
+                </div>
+                <div class="mt-4 text-center">
+                    <h5 class="text-sm font-bold text-white">07. Карта клиник</h5>
+                    <span class="text-xs text-slate-500">Геолокация и навигация</span>
+                </div>
+            </div>
+
+            <!-- SCREEN 8: Кнопка SOS и открытые клиники -->
+            <div class="screen-card flex flex-col items-center" data-category="geo">
+                <div class="phone-frame w-full aspect-[9/19] border-red-500/30">
+                    <div class="dynamic-island"></div>
+                    <div class="screenshot-placeholder-sos screenshot-box cursor-pointer" id="screen-box-sos" data-title="8. Кнопка SOS" onclick="pickFile('sos')">
+                        <img id="img-slot-sos" alt="Кнопка SOS и открытые клиники" src="">
+                        <div class="placeholder-ui text-center p-5 space-y-3">
+                            <div class="w-12 h-12 rounded-xl bg-neonRed/10 text-neonRed flex items-center justify-center mx-auto text-xl glow-red">
+                                <i class="fa-solid fa-bell-concierge"></i>
+                            </div>
+                            <span class="px-2 py-0.5 rounded bg-red-500/20 text-[10px] font-mono text-red-400 font-bold">Скриншот 8</span>
+                            <h4 class="text-base font-bold text-white">Кнопка SOS</h4>
+                            <p class="text-[11px] text-slate-400 leading-snug">Один тап — и на экране только открытые прямо сейчас реанимации</p>
+                            <button class="mt-2 px-3 py-1.5 rounded-lg bg-red-500/20 hover:bg-red-500/30 text-[11px] text-red-300 font-semibold pointer-events-none">Вставить фото</button>
+                        </div>
+                    </div>
+                </div>
+                <div class="mt-4 text-center">
+                    <h5 class="text-sm font-bold text-neonRed flex items-center justify-center gap-1.5">
+                        <span class="w-2 h-2 rounded-full bg-neonRed animate-pulse"></span> 08. Кнопка SOS
+                    </h5>
+                    <span class="text-xs text-slate-500">Ближайшая открытая помощь</span>
+                </div>
+            </div>
+
+        </div>
+    </section>
+
+    <section id="under-the-hood" class="py-28 relative border-t border-white/5 bg-noise">
+        <div class="max-w-7xl mx-auto px-6">
+            <div class="text-center max-w-3xl mx-auto mb-16 space-y-4">
+                <span class="text-xs uppercase tracking-[0.25em] font-extrabold text-neonEmerald">Архитектура & Разработка</span>
+                <h2 class="font-display text-3xl sm:text-5xl font-extrabold text-white">Как это устроено под капотом</h2>
+                <p class="text-slate-400 text-base">Чистая модульная архитектура на нативном Kotlin. Высокая производительность и надежность работы в критических сценариях.</p>
+            </div>
+
+            <!-- 4 Architecture Deep Dive Cards with Real Code Snippets -->
+            <div class="grid grid-cols-1 lg:grid-cols-2 gap-8">
+                
+                <!-- Subsystem 1: MapKit Clinic Search -->
+                <div class="glass-panel p-6 sm:p-8 rounded-3xl space-y-4 border-amber-500/30">
+                    <div class="flex items-center justify-between">
+                        <div class="flex items-center gap-3">
+                            <div class="w-10 h-10 rounded-xl bg-amber-500/10 text-amber-400 flex items-center justify-center text-lg">
+                                <i class="fa-solid fa-map-pin"></i>
+                            </div>
+                            <div>
+                                <h3 class="text-lg font-bold text-white">1. Поиск клиник (Yandex MapKit)</h3>
+                                <p class="text-xs text-slate-400">ClinicSearcher & LocationHelper</p>
+                            </div>
+                        </div>
+                        <span class="px-2.5 py-1 rounded-full bg-amber-500/10 text-amber-300 text-[11px] font-mono font-semibold">MapKit SDK</span>
+                    </div>
+                    
+                    <p class="text-xs text-slate-300 leading-relaxed">
+                        Используется <code class="text-amber-300">SearchFactory</code> для поиска организаций по категории «ветеринарная клиника» в заданном гео-радиусе от текущих GPS-координат пользователя с автоматическим геокодингом и кешированием маркеров.
+                    </p>
+
+                    <!-- Code block -->
+                    <div class="rounded-2xl bg-codeBg p-4 border border-white/10 overflow-x-auto">
+                        <pre><code><span class="token-keyword">class</span> <span class="token-type">ClinicSearcher</span>(<span class="token-keyword">private val</span> searchManager: <span class="token-type">SearchManager</span>) {
+    <span class="token-keyword">fun</span> <span class="token-function">searchNearbyClinics</span>(userPoint: <span class="token-type">Point</span>, onResult: (<span class="token-type">List</span>&lt;<span class="token-type">Clinic</span>&gt;) -> <span class="token-type">Unit</span>) {
+        <span class="token-keyword">val</span> searchOptions = <span class="token-type">SearchOptions</span>().apply {
+            searchTypes = <span class="token-type">SearchType</span>.BIZ.value
+            resultPageSize = <span class="token-val">25</span>
+        }
+        searchManager.<span class="token-function">submit</span>(
+            <span class="token-string">"ветеринарная клиника"</span>,
+            <span class="token-type">VisibleRegionUtils</span>.<span class="token-function">toPolygon</span>(userPoint, radius = <span class="token-val">7000.0</span>),
+            searchOptions,
+            <span class="token-keyword">object</span> : <span class="token-type">SearchListener</span> {
+                <span class="token-keyword">override fun</span> <span class="token-function">onSearchResponse</span>(response: <span class="token-type">Response</span>) {
+                    <span class="token-keyword">val</span> clinics = response.collection.children.mapNotNull { it.toClinic() }
+                    onResult(clinics)
+                }
+                <span class="token-keyword">override fun</span> <span class="token-function">onSearchError</span>(error: <span class="token-type">Error</span>) { <span class="token-comment">/* Handle gracefully */</span> }
+            }
+        )
+    }
+}</code></pre>
+                    </div>
+                </div>
+
+                <!-- Subsystem 2: Emergency SOS Filter -->
+                <div class="glass-panel p-6 sm:p-8 rounded-3xl space-y-4 border-red-500/30">
+                    <div class="flex items-center justify-between">
+                        <div class="flex items-center gap-3">
+                            <div class="w-10 h-10 rounded-xl bg-neonRed/10 text-neonRed flex items-center justify-center text-lg glow-red">
+                                <i class="fa-solid fa-triangle-exclamation"></i>
+                            </div>
+                            <div>
+                                <h3 class="text-lg font-bold text-white">2. Экстренный режим SOS (24/7)</h3>
+                                <p class="text-xs text-slate-400">MapScreen & MapViewModel фильтрация</p>
+                            </div>
+                        </div>
+                        <span class="px-2.5 py-1 rounded-full bg-red-500/10 text-red-400 text-[11px] font-mono font-semibold">Emergency SOS</span>
+                    </div>
+
+                    <p class="text-xs text-slate-300 leading-relaxed">
+                        По нажатию на кнопку SOS стейт мапы мгновенно переключается: отсекаются все закрытые заведения, оставляя только <code class="text-red-400">isOpenNow == true</code> с функцией звонка в реанимацию в один тап.
+                    </p>
+
+                    <!-- Code block -->
+                    <div class="rounded-2xl bg-codeBg p-4 border border-white/10 overflow-x-auto">
+                        <pre><code><span class="token-comment">// В MapViewModel: реактивная фильтрация открытых стационаров</span>
+<span class="token-keyword">val</span> activeClinics: <span class="token-type">StateFlow</span>&lt;<span class="token-type">List</span>&lt;<span class="token-type">Clinic</span>&gt;&gt; = combine(
+    _allClinics,
+    _isSosModeEnabled
+) { clinics, isSos ->
+    <span class="token-keyword">if</span> (!isSos) clinics
+    <span class="token-keyword">else</span> clinics
+        .filter { it.workingHours.<span class="token-function">isOpenNow</span>(currentTime = <span class="token-type">Instant</span>.now()) }
+        .sortedBy { it.distanceFromUserInMeters }
+}.<span class="token-function">stateIn</span>(viewModelScope, <span class="token-type">SharingStarted</span>.WhileSubscribed(<span class="token-val">5000</span>), emptyList())</code></pre>
+                    </div>
+                </div>
+
+                <!-- Subsystem 3: Offline Tesseract OCR -->
+                <div class="glass-panel p-6 sm:p-8 rounded-3xl space-y-4 border-purple-500/30">
+                    <div class="flex items-center justify-between">
+                        <div class="flex items-center gap-3">
+                            <div class="w-10 h-10 rounded-xl bg-neonPurple/10 text-neonPurple flex items-center justify-center text-lg glow-purple">
+                                <i class="fa-solid fa-file-lines"></i>
+                            </div>
+                            <div>
+                                <h3 class="text-lg font-bold text-white">3. Локальный OCR-анализ состава</h3>
+                                <p class="text-xs text-slate-400">Tesseract Engine & Preprocessing</p>
+                            </div>
+                        </div>
+                        <span class="px-2.5 py-1 rounded-full bg-purple-500/10 text-purple-300 text-[11px] font-mono font-semibold">Tess-Two / NDK</span>
+                    </div>
+
+                    <p class="text-xs text-slate-300 leading-relaxed">
+                        Изображение с камеры переводится в бинарный контраст (бинаризация Оцу), выравнивается угол наклона и подается в C++ движок <code class="text-purple-300">TessBaseAPI</code> с русской и латинской моделями.
+                    </p>
+
+                    <!-- Code block -->
+                    <div class="rounded-2xl bg-codeBg p-4 border border-white/10 overflow-x-auto">
+                        <pre><code><span class="token-keyword">class</span> <span class="token-type">TesseractOcrEngine</span>(context: <span class="token-type">Context</span>) {
+    <span class="token-keyword">private val</span> tessApi = <span class="token-type">TessBaseAPI</span>().apply {
+        <span class="token-keyword">val</span> trainedDataPath = context.filesDir.absolutePath + <span class="token-string">"/tessdata"</span>
+        <span class="token-function">init</span>(trainedDataPath, <span class="token-string">"rus+eng"</span>)
+        pageSegMode = <span class="token-type">TessBaseAPI</span>.PageSegMode.PSM_AUTO
+    }
+
+    <span class="token-keyword">suspend fun</span> <span class="token-function">extractComposition</span>(bitmap: <span class="token-type">Bitmap</span>): <span class="token-type">String</span> = withContext(<span class="token-type">Dispatchers</span>.Default) {
+        <span class="token-keyword">val</span> preprocessed = <span class="token-type">ImageFilters</span>.<span class="token-function">toGrayscaleAdaptiveThreshold</span>(bitmap)
+        tessApi.<span class="token-function">setImage</span>(preprocessed)
+        <span class="token-keyword">return@withContext</span> tessApi.utF8Text ?: <span class="token-string">""</span>
+    }
+}</code></pre>
+                    </div>
+                </div>
+
+                <!-- Subsystem 4: LLM Structured Output -->
+                <div class="glass-panel p-6 sm:p-8 rounded-3xl space-y-4 border-cyan-500/30">
+                    <div class="flex items-center justify-between">
+                        <div class="flex items-center gap-3">
+                            <div class="w-10 h-10 rounded-xl bg-cyan-500/10 text-cyan-400 flex items-center justify-center text-lg glow-cyan">
+                                <i class="fa-solid fa-microchip"></i>
+                            </div>
+                            <div>
+                                <h3 class="text-lg font-bold text-white">4. Персональный вердикт ИИ</h3>
+                                <p class="text-xs text-slate-400">LLM API & Strict JSON Schema</p>
+                            </div>
+                        </div>
+                        <span class="px-2.5 py-1 rounded-full bg-cyan-500/10 text-cyan-300 text-[11px] font-mono font-semibold">JSON Schema</span>
+                    </div>
+
+                    <p class="text-xs text-slate-300 leading-relaxed">
+                        Распознанный состав встраивается в ветеринарный промпт с профилем животного. Нейросеть отвечает строго типизированным JSON без галлюцинаций для мгновенного рендера в Compose UI.
+                    </p>
+
+                    <!-- Code block -->
+                    <div class="rounded-2xl bg-codeBg p-4 border border-white/10 overflow-x-auto">
+                        <pre><code><span class="token-comment">// Запрос к API со строгой схемой ответа (Structured Output)</span>
+<span class="token-keyword">data class</span> <span class="token-type">FoodVerdict</span>(
+    <span class="token-keyword">val</span> rating: <span class="token-type">VerdictRating</span>, <span class="token-comment">// EXCELLENT, CAUTION, DANGEROUS</span>
+    <span class="token-keyword">val</span> score: <span class="token-type">Int</span>,           <span class="token-comment">// 0..100</span>
+    <span class="token-keyword">val</span> pros: <span class="token-type">List</span>&lt;<span class="token-type">String</span>&gt;,
+    <span class="token-keyword">val</span> detectedAllergens: <span class="token-type">List</span>&lt;<span class="token-type">String</span>&gt;,
+    <span class="token-keyword">val</span> mineralsWarning: <span class="token-type">String</span>?
+)</code></pre>
+                    </div>
+                </div>
+
+            </div>
+        </div>
+    </section>
+
+    <section id="tech" class="py-24 relative border-t border-white/5">
+        <div class="max-w-6xl mx-auto px-6 text-center space-y-12">
+            <div>
+                <span class="text-xs uppercase tracking-[0.25em] font-extrabold text-neonPurple">Инженерный фундамент</span>
+                <h2 class="font-display text-3xl sm:text-5xl font-extrabold text-white mt-2">Native Android & Modern AI Stack</h2>
+                <p class="text-slate-400 text-sm max-w-xl mx-auto mt-2">Высокопроизводительный стек компонентов корпоративного уровня без накладных расходов</p>
+            </div>
+
+            <!-- Tech Badges Grid -->
+            <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6 text-left">
+                
+                <div class="tech-card glass-panel p-6 rounded-2xl flex flex-col justify-between space-y-4 hover:border-neonEmerald/40 transition">
+                    <div class="w-12 h-12 rounded-xl bg-neonEmerald/10 flex items-center justify-center text-neonEmerald text-2xl">
+                        <i class="fa-brands fa-android"></i>
+                    </div>
+                    <div>
+                        <div class="font-bold text-white text-base">Kotlin & Compose</div>
+                        <div class="text-xs text-slate-400 mt-1">100% Declarative UI, Material 3, Clean Architecture & StateFlow</div>
+                    </div>
+                </div>
+
+                <div class="tech-card glass-panel p-6 rounded-2xl flex flex-col justify-between space-y-4 hover:border-neonPurple/40 transition">
+                    <div class="w-12 h-12 rounded-xl bg-neonPurple/10 flex items-center justify-center text-neonPurple text-2xl">
+                        <i class="fa-solid fa-eye"></i>
+                    </div>
+                    <div>
+                        <div class="font-bold text-white text-base">Tesseract / ML OCR</div>
+                        <div class="text-xs text-slate-400 mt-1">Локальный офлайн парсер текста состава корма прямо на CPU смартфона</div>
+                    </div>
+                </div>
+
+                <div class="tech-card glass-panel p-6 rounded-2xl flex flex-col justify-between space-y-4 hover:border-cyan-400/40 transition">
+                    <div class="w-12 h-12 rounded-xl bg-cyan-500/10 flex items-center justify-center text-cyan-400 text-2xl">
+                        <i class="fa-solid fa-network-wired"></i>
+                    </div>
+                    <div>
+                        <div class="font-bold text-white text-base">Groq / YandexGPT</div>
+                        <div class="text-xs text-slate-400 mt-1">Инференс в строгом JSON-режиме (Structured Outputs) для генерации вердикта</div>
+                    </div>
+                </div>
+
+                <div class="tech-card glass-panel p-6 rounded-2xl flex flex-col justify-between space-y-4 hover:border-amber-400/40 transition">
+                    <div class="w-12 h-12 rounded-xl bg-amber-500/10 flex items-center justify-center text-amber-400 text-2xl">
+                        <i class="fa-solid fa-map-location-dot"></i>
+                    </div>
+                    <div>
+                        <div class="font-bold text-white text-base">Yandex MapKit Full</div>
+                        <div class="text-xs text-slate-400 mt-1">Векторные карты, поиск SearchFactory и SOS-фильтр открытых 24/7 клиник</div>
+                    </div>
+                </div>
+
+            </div>
+        </div>
+    </section>
+
+    <section id="share" class="py-24 relative border-t border-white/5 bg-gradient-to-b from-[#070709] via-[#0d1017] to-[#070709]">
+        <div class="max-w-5xl mx-auto px-6">
+            <div class="glass-panel p-8 sm:p-12 rounded-[36px] border-white/10 relative overflow-hidden text-center space-y-8">
+                
+                <div class="inline-flex items-center gap-2 px-4 py-1.5 rounded-full bg-white/5 border border-white/10 text-slate-300 text-xs font-semibold">
+                    <i class="fa-brands fa-github text-neonEmerald text-sm"></i>
+                    <span>Open Source Community Project</span>
+                </div>
+
+                <div class="space-y-3 max-w-2xl mx-auto">
+                    <h2 class="font-display text-3xl sm:text-5xl font-black text-white">
+                        Присоединяйтесь к тестировке на GitHub
+                    </h2>
+                </div>
+
+                <!-- GitHub Main Action Card -->
+                <div class="max-w-xl mx-auto glass-pill p-6 rounded-2xl border border-emerald-500/30 flex flex-col sm:flex-row items-center justify-between gap-4">
+                    <div class="flex items-center gap-3 text-left">
+                        <div class="w-12 h-12 rounded-xl bg-white/10 flex items-center justify-center text-2xl text-white">
+                            <i class="fa-brands fa-github"></i>
+                        </div>
+                        <div>
+                            <div class="font-bold text-white text-sm">LittleSangwoo / VetPocket</div>
+                            <div class="text-xs text-slate-400">Kotlin • Jetpack Compose • Yandex MapKit • OCR</div>
+                        </div>
+                    </div>
+
+                    <a href="https://github.com/LittleSangwoo/VetPocket" target="_blank" rel="noopener noreferrer" class="w-full sm:w-auto px-6 py-3 rounded-xl bg-neonEmerald hover:bg-emerald-300 text-black font-extrabold text-xs transition shadow-lg shadow-neonEmerald/25 flex items-center justify-center gap-2">
+                        <i class="fa-solid fa-arrow-up-right-from-square"></i>
+                        <span>Перейти к коду</span>
+                    </a>
+                </div>
+
+                <!-- Social Share Buttons Row -->
+                <div class="pt-4 border-t border-white/10 space-y-3">
+                    <span class="text-xs text-slate-400 block font-medium">Поделиться проектом с коллегами и научным руководителем:</span>
+                    <div class="flex flex-wrap items-center justify-center gap-3">
+                        <!-- Copy Link -->
+                        <button onclick="copyProjectLink()" class="px-4 py-2.5 rounded-xl glass-pill hover:bg-white/10 text-xs font-semibold text-slate-200 transition flex items-center gap-2 border border-white/15">
+                            <i class="fa-solid fa-link text-neonEmerald"></i>
+                            <span>Скопировать ссылку</span>
+                        </button>
+                        <!-- Telegram Share -->
+                        <button onclick="shareTelegram()" class="px-4 py-2.5 rounded-xl bg-[#229ED9]/15 hover:bg-[#229ED9]/30 text-[#229ED9] border border-[#229ED9]/40 text-xs font-semibold transition flex items-center gap-2">
+                            <i class="fa-brands fa-telegram text-sm"></i>
+                            <span>Telegram</span>
+                        </button>
+                        <!-- VK Share -->
+                        <button onclick="shareVK()" class="px-4 py-2.5 rounded-xl bg-[#0077FF]/15 hover:bg-[#0077FF]/30 text-[#0077FF] border border-[#0077FF]/40 text-xs font-semibold transition flex items-center gap-2">
+                            <i class="fa-brands fa-vk text-sm"></i>
+                            <span>ВКонтакте</span>
+                        </button>
+                        <!-- Twitter / X Share -->
+                        <button onclick="shareTwitter()" class="px-4 py-2.5 rounded-xl bg-white/5 hover:bg-white/10 text-white border border-white/20 text-xs font-semibold transition flex items-center gap-2">
+                            <i class="fa-brands fa-x-twitter text-sm"></i>
+                            <span>X (Twitter)</span>
+                        </button>
+                    </div>
+                </div>
+
+            </div>
+        </div>
+    </section>
+
+    <section id="download" class="py-28 relative border-t border-white/5 bg-noise overflow-hidden">
+        <div class="absolute -bottom-40 left-1/2 -translate-x-1/2 w-[600px] h-[300px] bg-gradient-to-t from-neonEmerald/20 to-transparent blur-3xl pointer-events-none"></div>
+
+        <div class="max-w-5xl mx-auto px-6">
+            <div class="glass-panel p-10 sm:p-16 rounded-[40px] border-emerald-500/30 text-center relative overflow-hidden">
+                <div class="max-w-2xl mx-auto space-y-6">
+                    <div class="inline-flex items-center gap-2 px-4 py-1.5 rounded-full bg-emerald-500/10 border border-emerald-500/20 text-neonEmerald text-xs font-bold">
+                        <i class="fa-solid fa-heart-pulse"></i> Сделайте жизнь питомца здоровее
+                    </div>
+
+                    <h2 class="font-display text-3xl sm:text-5xl font-black text-white">
+                        Установите VetPocket на свой Android
+                    </h2>
+
+                    <p class="text-slate-400 text-sm sm:text-base leading-relaxed">
+                        Сканируйте рацион своего любимца, сохраняйте историю в едином защищенном карманном приложении и будьте уверены в экстренной помощи.
+                    </p>
+
+                    <!-- QR and Button Container -->
+                    <div class="pt-6 flex flex-col sm:flex-row items-center justify-center gap-8">
+                        
+                        <!-- QR Code Mockup box -->
+                        <div class="glass-pill p-4 rounded-3xl border-white/10 flex flex-col items-center space-y-2.5">
+                            <div class="w-32 h-32 bg-white rounded-2xl p-2.5 flex items-center justify-center shadow-lg">
+                                <img id="apk-dynamic-qr" src="https://api.qrserver.com/v1/create-qr-code/?size=400x400&amp;data=https://github.com/LittleSangwoo/VetPocket/releases/download/v1.0.0/app-debug.apk&amp;margin=10" alt="QR-код для загрузки APK" class="w-48 h-48 sm:w-52 sm:h-52 object-contain rounded-xl">
+                            </div>
+                            <span class="text-[11px] font-mono text-slate-400 uppercase tracking-wider">QR на репозиторий</span>
+                        </div>
+
+                        <!-- Store Button / Download APK -->
+                        <div class="space-y-3 text-left">
+                            
+                            <a href="https://github.com/LittleSangwoo/VetPocket" target="_blank" rel="noopener noreferrer" class="w-full flex items-center gap-4 px-6 py-4 rounded-2xl glass-panel hover:bg-white/10 text-white transition-all border border-white/20">
+                                <i class="fa-brands fa-github text-2xl text-neonEmerald"></i>
+                                <div>
+                                    <div class="text-[10px] uppercase font-bold text-slate-400">Репозиторий проекта</div>
+                                    <div class="text-base font-bold tracking-tight">GitHub: VetPocket</div>
+                                </div>
+                            </a>
+
+
+                        </div>
+
+                    </div>
+                </div>
+            </div>
+
+            <!-- Footer minimal -->
+            <footer class="mt-16 text-center text-xs text-slate-500 flex flex-col sm:flex-row items-center justify-between gap-4 border-t border-white/5 pt-8">
+                <div>© 2026 VetPocket Open Health. Проект по дисциплине разработка мобильных приложений.</div>
+                <div class="flex items-center gap-6">
+                    <a href="https://github.com/LittleSangwoo/VetPocket" target="_blank" rel="noopener noreferrer" class="hover:text-neonEmerald transition flex items-center gap-1.5">
+                        <i class="fa-brands fa-github text-sm"></i>
+                        <span>github.com/LittleSangwoo/VetPocket</span>
+                    </a>
+                    <a href="#hero" class="hover:text-slate-300">Наверх ↑</a>
+                </div>
+            </footer>
+        </div>
+    </section>
+
+    <div id="media-modal" class="fixed inset-0 z-50 bg-black/80 backdrop-blur-md hidden items-center justify-center p-4">
+        <div class="glass-panel w-full max-w-xl rounded-3xl border border-white/20 p-6 sm:p-8 space-y-6">
+            <div class="flex items-center justify-between">
+                <div class="flex items-center gap-3">
+                    <div class="w-10 h-10 rounded-xl bg-neonPurple/20 text-neonPurple flex items-center justify-center text-xl">
+                        <i class="fa-solid fa-images"></i>
+                    </div>
+                    <div>
+                        <h3 class="text-lg font-bold text-white">Вставка скриншота</h3>
+                        <p class="text-xs text-slate-400" id="modal-target-label">Выберите скриншот для экрана</p>
+                    </div>
+                </div>
+                <button onclick="closeMediaModal()" class="w-8 h-8 rounded-full bg-white/5 hover:bg-white/10 text-slate-400 flex items-center justify-center">
+                    <i class="fa-solid fa-xmark"></i>
+                </button>
+            </div>
+
+            <div class="space-y-4">
+                <!-- File Upload Box -->
+                <label class="border-2 border-dashed border-white/15 hover:border-neonEmerald/50 rounded-2xl p-8 flex flex-col items-center justify-center text-center cursor-pointer transition bg-white/[0.02] hover:bg-white/[0.05]">
+                    <i class="fa-solid fa-cloud-arrow-up text-3xl text-neonEmerald mb-2"></i>
+                    <span class="text-sm font-semibold text-white">Выберите файл с компьютера</span>
+                    <span class="text-xs text-slate-400 mt-1">PNG, JPG, WebP любого разрешения</span>
+                    <input type="file" id="modal-file-input" accept="image/*" class="hidden" onchange="handleModalFile(this)">
+                </label>
+
+                <div class="flex items-center gap-3 text-xs text-slate-500 uppercase">
+                    <div class="h-px bg-white/10 flex-1"></div>
+                    <span>или вставьте прямую ссылку (URL)</span>
+                    <div class="h-px bg-white/10 flex-1"></div>
+                </div>
+
+                <div class="flex gap-2">
+                    <input type="url" id="modal-url-input" placeholder="https://example.com/screenshot.jpg" class="flex-1 px-4 py-3 rounded-xl bg-white/5 border border-white/10 text-xs text-white focus:outline-none focus:border-neonEmerald">
+                    <button onclick="applyUrlImage()" class="px-5 py-3 rounded-xl bg-neonEmerald hover:bg-emerald-400 text-black font-bold text-xs transition">
+                        Применить
+                    </button>
+                </div>
+            </div>
+
+            <!-- Quick Jump to other screens -->
+            <div class="pt-4 border-t border-white/10">
+                <span class="text-[11px] text-slate-400 font-semibold block mb-2">Быстрый переход к экранам:</span>
+                <div class="flex flex-wrap gap-1.5 text-[11px]">
+                    <button onclick="switchModalTarget('home', '1. Главная страница')" class="px-2.5 py-1 rounded bg-white/5 hover:bg-white/10">01 Главная</button>
+                    <button onclick="switchModalTarget('camera', '2. Камера при наведении')" class="px-2.5 py-1 rounded bg-white/5 hover:bg-white/10">02 Камера</button>
+                    <button onclick="switchModalTarget('ai', '3. Анализ ИИ')" class="px-2.5 py-1 rounded bg-white/5 hover:bg-white/10">03 Анализ ИИ</button>
+                    <button onclick="switchModalTarget('vaccine', '4. Медкарта прививки')" class="px-2.5 py-1 rounded bg-white/5 hover:bg-white/10">04 Прививки</button>
+                    <button onclick="switchModalTarget('weight', '5. Динамика веса')" class="px-2.5 py-1 rounded bg-white/5 hover:bg-white/10">05 Вес</button>
+                    <button onclick="switchModalTarget('chronicle', '6. Хроника')" class="px-2.5 py-1 rounded bg-white/5 hover:bg-white/10">06 Хроника</button>
+                    <button onclick="switchModalTarget('map', '7. Карта клиник')" class="px-2.5 py-1 rounded bg-white/5 hover:bg-white/10">07 Карта</button>
+                    <button onclick="switchModalTarget('sos', '8. Кнопка SOS')" class="px-2.5 py-1 rounded bg-white/5 hover:bg-white/10">08 SOS</button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Hidden global input for direct slot clicks -->
+    <input type="file" id="direct-file-input" accept="image/*" class="hidden" onchange="handleDirectFile(this)">
+
+    <script>
+        // -------------------------------------------------------------
+        // Three.js Particle Wave in Hero
+        // -------------------------------------------------------------
+        window.addEventListener('load', () => {
+            initThreeHero();
+            initGsapScroll();
+            initTiltPhysics();
+            loadCachedImages();
+            updateCounter();
+        });
+
+        function initThreeHero() {
+            try {
+                const canvas = document.getElementById('three-hero-canvas');
+                if (!canvas || typeof THREE === 'undefined') return;
+
+                const scene = new THREE.Scene();
+                const camera = new THREE.PerspectiveCamera(75, window.innerWidth / window.innerHeight, 0.1, 1000);
+                const renderer = new THREE.WebGLRenderer({ canvas: canvas, alpha: true, antialias: true });
+
+                function resize() {
+                    camera.aspect = window.innerWidth / window.innerHeight;
+                    camera.updateProjectionMatrix();
+                    renderer.setSize(window.innerWidth, window.innerHeight);
+                }
+                resize();
+                window.addEventListener('resize', resize);
+
+                // Particles Geometry
+                const particlesCount = 750;
+                const positions = new Float32Array(particlesCount * 3);
+                const colors = new Float32Array(particlesCount * 3);
+
+                const color1 = new THREE.Color(0x10B981); // Emerald
+                const color2 = new THREE.Color(0x8B5CF6); // Purple
+
+                for (let i = 0; i < particlesCount; i++) {
+                    const i3 = i * 3;
+                    positions[i3] = (Math.random() - 0.5) * 16;
+                    positions[i3 + 1] = (Math.random() - 0.5) * 10;
+                    positions[i3 + 2] = (Math.random() - 0.5) * 12;
+
+                    const mixedColor = color1.clone().lerp(color2, Math.random());
+                    colors[i3] = mixedColor.r;
+                    colors[i3 + 1] = mixedColor.g;
+                    colors[i3 + 2] = mixedColor.b;
+                }
+
+                const geometry = new THREE.BufferGeometry();
+                geometry.setAttribute('position', new THREE.BufferAttribute(positions, 3));
+                geometry.setAttribute('color', new THREE.BufferAttribute(colors, 3));
+
+                const material = new THREE.PointsMaterial({
+                    size: 0.05,
+                    vertexColors: true,
+                    transparent: true,
+                    opacity: 0.75
+                });
+
+                const points = new THREE.Points(geometry, material);
+                scene.add(points);
+
+                camera.position.z = 5;
+
+                // Mouse interaction on particles
+                let mouseX = 0;
+                let mouseY = 0;
+                window.addEventListener('mousemove', (e) => {
+                    mouseX = (e.clientX / window.innerWidth) - 0.5;
+                    mouseY = (e.clientY / window.innerHeight) - 0.5;
+                });
+
+                let clock = new THREE.Clock();
+
+                function animate() {
+                    requestAnimationFrame(animate);
+                    const elapsedTime = clock.getElapsedTime();
+
+                    points.rotation.y = elapsedTime * 0.05 + mouseX * 0.2;
+                    points.rotation.x = mouseY * 0.2;
+
+                    renderer.render(scene, camera);
+                }
+                animate();
+            } catch (err) {
+                console.warn('Three.js background initialization safely skipped:', err);
+            }
+        }
+
+        // -------------------------------------------------------------
+        // Safe GSAP Scroll Animations
+        // -------------------------------------------------------------
+        function initGsapScroll() {
+            if (typeof gsap === 'undefined' || typeof ScrollTrigger === 'undefined') return;
+            try {
+                gsap.registerPlugin(ScrollTrigger);
+
+                gsap.from("#goals .glass-panel", {
+                    scrollTrigger: {
+                        trigger: "#goals",
+                        start: "top 80%",
+                    },
+                    y: 35,
+                    opacity: 0,
+                    duration: 0.7,
+                    stagger: 0.12,
+                    ease: "power2.out",
+                    clearProps: "all"
+                });
+
+                gsap.from("#solution .bento-card", {
+                    scrollTrigger: {
+                        trigger: "#solution",
+                        start: "top 80%",
+                    },
+                    y: 40,
+                    opacity: 0,
+                    duration: 0.8,
+                    stagger: 0.15,
+                    ease: "power2.out",
+                    clearProps: "all"
+                });
+
+                gsap.from(".screen-card", {
+                    scrollTrigger: {
+                        trigger: "#gallery",
+                        start: "top 75%",
+                    },
+                    y: 45,
+                    opacity: 0,
+                    duration: 0.7,
+                    stagger: 0.1,
+                    ease: "power2.out",
+                    clearProps: "all"
+                });
+            } catch (e) {
+                console.warn('GSAP initialization skipped:', e);
+            }
+        }
+
+        // -------------------------------------------------------------
+        // 3D Tilt Effect on Mockups & Cards
+        // -------------------------------------------------------------
+        function initTiltPhysics() {
+            const cards = document.querySelectorAll('.phone-frame');
+            cards.forEach(card => {
+                card.addEventListener('mousemove', (e) => {
+                    const rect = card.getBoundingClientRect();
+                    const x = e.clientX - rect.left;
+                    const y = e.clientY - rect.top;
+                    
+                    const centerX = rect.width / 2;
+                    const centerY = rect.height / 2;
+                    
+                    const rotateX = ((y - centerY) / centerY) * -10;
+                    const rotateY = ((x - centerX) / centerX) * 10;
+
+                    card.style.transform = `perspective(1000px) rotateX(${rotateX}deg) rotateY(${rotateY}deg) scale(1.02)`;
+                });
+
+                card.addEventListener('mouseleave', () => {
+                    card.style.transform = `perspective(1000px) rotateX(0deg) rotateY(0deg) scale(1)`;
+                });
+            });
+        }
+
+        // -------------------------------------------------------------
+        // Image Manager & Screenshot Insertion Logic
+        // -------------------------------------------------------------
+        const SLOTS = ['home', 'camera', 'ai', 'vaccine', 'weight', 'chronicle', 'map', 'sos'];
+        let currentTargetSlot = 'home';
+
+        function updateCounter() {
+            let count = 0;
+            SLOTS.forEach(s => {
+                const box = document.getElementById('screen-box-' + s);
+                if (box && box.classList.contains('has-img')) count++;
+            });
+            const counter = document.getElementById('loaded-screens-counter');
+            if (counter) {
+                counter.innerText = `Скриншотов готово: ${count} из 8`;
+            }
+        }
+
+        function pickFile(slotId) {
+            currentTargetSlot = slotId;
+            const input = document.getElementById('direct-file-input');
+            if (input) input.click();
+        }
+
+        function handleDirectFile(input) {
+            if (input.files && input.files[0]) {
+                const reader = new FileReader();
+                reader.onload = function(e) {
+                    insertImageToSlot(currentTargetSlot, e.target.result, true);
+                };
+                reader.readAsDataURL(input.files[0]);
+            }
+        }
+
+        function openMediaManager() {
+            switchModalTarget('home', '1. Главная страница');
+            document.getElementById('media-modal').classList.remove('hidden');
+            document.getElementById('media-modal').classList.add('flex');
+        }
+
+        function closeMediaModal() {
+            document.getElementById('media-modal').classList.add('hidden');
+            document.getElementById('media-modal').classList.remove('flex');
+        }
+
+        function switchModalTarget(slotId, label) {
+            currentTargetSlot = slotId;
+            document.getElementById('modal-target-label').innerText = 'Целевой экран: ' + label;
+        }
+
+        function handleModalFile(input) {
+            if (input.files && input.files[0]) {
+                const reader = new FileReader();
+                reader.onload = function(e) {
+                    insertImageToSlot(currentTargetSlot, e.target.result, true);
+                    closeMediaModal();
+                };
+                reader.readAsDataURL(input.files[0]);
+            }
+        }
+
+        function applyUrlImage() {
+            const urlInput = document.getElementById('modal-url-input');
+            if (urlInput && urlInput.value.trim() !== '') {
+                insertImageToSlot(currentTargetSlot, urlInput.value.trim(), true);
+                closeMediaModal();
+                urlInput.value = '';
+            }
+        }
+
+        function insertImageToSlot(slotId, imgSrc, saveToStorage = true) {
+            const box = document.getElementById('screen-box-' + slotId);
+            const img = document.getElementById('img-slot-' + slotId);
+
+            if (box && img) {
+                img.src = imgSrc;
+                box.classList.add('has-img');
+            }
+
+            // Sync hero slot with home slot
+            if (slotId === '1' || slotId === 'home') {
+                const b1 = document.getElementById('screen-box-1');
+                const i1 = document.getElementById('img-slot-1');
+                const bHome = document.getElementById('screen-box-home');
+                const iHome = document.getElementById('img-slot-home');
+                
+                if (b1 && i1) { i1.src = imgSrc; b1.classList.add('has-img'); }
+                if (bHome && iHome) { iHome.src = imgSrc; bHome.classList.add('has-img'); }
+            }
+
+            if (saveToStorage) {
+                try {
+                    localStorage.setItem('vetpocket_img_' + slotId, imgSrc);
+                } catch (e) {
+                    console.warn('LocalStorage limit reached for high-res images');
+                }
+            }
+            updateCounter();
+        }
+
+        function loadCachedImages() {
+            SLOTS.forEach(slotId => {
+                const cached = localStorage.getItem('vetpocket_img_' + slotId);
+                if (cached) {
+                    insertImageToSlot(slotId, cached, false);
+                }
+            });
+        }
+
+        // -------------------------------------------------------------
+        // One-Click Standalone Export For College Defense
+        // -------------------------------------------------------------
+        function exportSelfContainedHtml() {
+            const fullHtml = "<!DOCTYPE html>\n" + document.documentElement.outerHTML;
+            const blob = new Blob([fullHtml], { type: 'text/html;charset=utf-8' });
+            const url = URL.createObjectURL(blob);
+            const a = document.createElement('a');
+            a.href = url;
+            a.download = 'VetPocket_Defense_Presentation.html';
+            document.body.appendChild(a);
+            a.click();
+            document.body.removeChild(a);
+            URL.revokeObjectURL(url);
+            showToast("Файл с запеченными скриншотами скачан!");
+        }
+
+        // -------------------------------------------------------------
+        // Gallery Filter Tabs
+        // -------------------------------------------------------------
+        function filterGallery(category, btnElement) {
+            const cards = document.querySelectorAll('.screen-card');
+            const btns = document.querySelectorAll('.gallery-btn');
+
+            btns.forEach(b => {
+                b.classList.remove('border-neonEmerald', 'text-neonEmerald', 'active');
+                b.classList.add('text-slate-400');
+            });
+            if (btnElement) {
+                btnElement.classList.add('border-neonEmerald', 'text-neonEmerald', 'active');
+                btnElement.classList.remove('text-slate-400');
+            }
+
+            cards.forEach(card => {
+                if (category === 'all' || card.getAttribute('data-category') === category) {
+                    card.style.display = 'flex';
+                } else {
+                    card.style.display = 'none';
+                }
+            });
+        }
+
+        // -------------------------------------------------------------
+        // Social Share and Copy Link Helpers
+        // -------------------------------------------------------------
+        function showToast(text) {
+            const toast = document.getElementById('toast');
+            const toastText = document.getElementById('toast-text');
+            if (toast && toastText) {
+                toastText.innerText = text;
+                toast.classList.add('show');
+                setTimeout(() => {
+                    toast.classList.remove('show');
+                }, 3000);
+            }
+        }
+
+        function copyProjectLink() {
+            const repoUrl = "https://github.com/LittleSangwoo/VetPocket";
+            const tempInput = document.createElement('input');
+            tempInput.value = repoUrl;
+            document.body.appendChild(tempInput);
+            tempInput.select();
+            document.execCommand('copy');
+            document.body.removeChild(tempInput);
+            showToast("Ссылка на GitHub VetPocket скопирована в буфер!");
+        }
+
+        function shareTelegram() {
+            const url = encodeURIComponent("https://github.com/LittleSangwoo/VetPocket");
+            const text = encodeURIComponent("VetPocket — нативное Android-приложение для умного анализа состава кормов и заботы о питомцах с AI:");
+            window.open(`https://t.me/share/url?url=${url}&text=${text}`, '_blank');
+        }
+
+        function shareVK() {
+            const url = encodeURIComponent("https://github.com/LittleSangwoo/VetPocket");
+            const title = encodeURIComponent("VetPocket — AI-забота о питомцах нового поколения");
+            window.open(`https://vk.com/share.php?url=${url}&title=${title}`, '_blank');
+        }
+
+        function shareTwitter() {
+            const url = encodeURIComponent("https://github.com/LittleSangwoo/VetPocket");
+            const text = encodeURIComponent("VetPocket: AI-powered pet care native Android app with OCR, Yandex MapKit & LLM analysis #Android #Kotlin #AI");
+            window.open(`https://twitter.com/intent/tweet?url=${url}&text=${text}`, '_blank');
+        }
+    </script>
+</body>
+</html>
